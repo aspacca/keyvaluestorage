@@ -17,8 +17,8 @@ $ docker-compose up
 Parameter | Description | Value | Env
 --- | --- | --- | ---
 listener | port to use for http (0.0.0.0:80) | |
-provider | which storage provider to use | (local) |
-basedir | path storage for local provider| |
+provider | which storage provider to use | (fs) |
+basedir | path storage for filesystem provider| |
 
 ## Build
 

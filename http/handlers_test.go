@@ -29,7 +29,7 @@ func boostrap(t *testing.T) *Server {
 		}
 	}
 
-	strg, err := storage.NewLocalStorage(tmpDir)
+	strg, err := storage.NewFileSystemStorage(tmpDir)
 	if err != nil {
 		t.Fatalf("err not expected: %s", err)
 	}

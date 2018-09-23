@@ -19,4 +19,4 @@ COPY --from=build /usr/bin/server /root/
 EXPOSE 8080
 WORKDIR /root/
 
-CMD ["./server", "--basedir", "./", "--provider", "local"]
+CMD ["./server", "--basedir", "./", "--provider", "fs"]

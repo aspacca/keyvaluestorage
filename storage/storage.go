@@ -35,16 +35,15 @@ type Storage interface {
 	IsNotExist(err error) bool
 }
 
-type LocalStorage struct {
+type FileSystemStorage struct {
 	storageDir string
 	locks map[string]*sync.Mutex
 }
 
-// Factory for local storage
+// Factory for fs storage
 // saves db to `storageDir/storage.db`
-// track metrics on nullable prometehus.HistogramVec
-func NewLocalStorage(storageDir string) (*LocalStorage, error) {
-	return &LocalStorage{
+func NewFileSystemStorage(storageDir string) (*FileSystemStorage, error) {
+	return &FileSystemStorage{
 		storageDir: storageDir,
 		locks: map[string]*sync.Mutex{},
 	}, nil
@@ -84,11 +83,11 @@ func getReader(storageDir string, fileName string) (*os.File, error) {
 	return f, nil
 }
 
-func (s *LocalStorage) Type() string {
-	return "local"
+func (s *FileSystemStorage) Type() string {
+	return "fs"
 }
 
-func (s *LocalStorage) IsNotExist(err error) bool {
+func (s *FileSystemStorage) IsNotExist(err error) bool {
 	if err == nil {
 		return false
 	}
@@ -96,19 +95,19 @@ func (s *LocalStorage) IsNotExist(err error) bool {
 	return err == NotExistsError
 }
 
-func (s *LocalStorage) lockAll() {
+func (s *FileSystemStorage) lockAll() {
 	for key := range s.locks {
 		s.locks[key].Lock()
 	}
 }
 
-func (s *LocalStorage) unlockAll() {
+func (s *FileSystemStorage) unlockAll() {
 	for key := range s.locks {
 		s.locks[key].Unlock()
 	}
 }
 
-func (s *LocalStorage) lock(key string) {
+func (s *FileSystemStorage) lock(key string) {
 	if _, ok := s.locks[key]; !ok {
 		s.locks[key] = &sync.Mutex{}
 	}
@@ -116,11 +115,11 @@ func (s *LocalStorage) lock(key string) {
 	s.locks[key].Lock()
 }
 
-func (s *LocalStorage) unlock(key string) {
+func (s *FileSystemStorage) unlock(key string) {
 	s.locks[key].Unlock()
 }
 
-func (s *LocalStorage) Get(key string) (io.Reader, error) {
+func (s *FileSystemStorage) Get(key string) (io.Reader, error) {
 	r := bytes.NewReader(nil)
 
 	s.lock(key)
@@ -150,7 +149,7 @@ func (s *LocalStorage) Get(key string) (io.Reader, error) {
 	return r, NotExistsError
 }
 
-func (s *LocalStorage) GetPattern(pattern string) (io.Reader, error) {
+func (s *FileSystemStorage) GetPattern(pattern string) (io.Reader, error) {
 	r := bytes.NewReader(nil)
 
 	s.lockAll()
@@ -192,7 +191,7 @@ func (s *LocalStorage) GetPattern(pattern string) (io.Reader, error) {
 	return r, nil
 }
 
-func (s *LocalStorage) Delete(key string) error {
+func (s *FileSystemStorage) Delete(key string) error {
 	s.lock(key)
 	defer s.unlock(key)
 
@@ -201,7 +200,7 @@ func (s *LocalStorage) Delete(key string) error {
 	return s.deleteStorage(key)
 }
 
-func (s *LocalStorage) DeleteAll() error {
+func (s *FileSystemStorage) DeleteAll() error {
 	s.lockAll()
 	defer s.unlockAll()
 
@@ -217,7 +216,7 @@ func (s *LocalStorage) DeleteAll() error {
 	return nil
 }
 
-func (s *LocalStorage) Put(key string, value string, expiration time.Duration) error {
+func (s *FileSystemStorage) Put(key string, value string, expiration time.Duration) error {
 	s.lock(key)
 	defer s.unlock(key)
 
@@ -240,7 +239,7 @@ func (s *LocalStorage) Put(key string, value string, expiration time.Duration) e
 	return s.dumpToStorage(key, dumped)
 }
 
-func (s *LocalStorage) getAllStorageKeys() ([]string, error) {
+func (s *FileSystemStorage) getAllStorageKeys() ([]string, error) {
 	if err := os.Mkdir(s.storageDir, 0700); err != nil && !os.IsExist(err) {
 		return []string{}, err
 	}
@@ -261,7 +260,7 @@ func (s *LocalStorage) getAllStorageKeys() ([]string, error) {
 	return r, nil
 }
 
-func (s *LocalStorage) getStorageData(key string) ([]byte, error) {
+func (s *FileSystemStorage) getStorageData(key string) ([]byte, error) {
 	f, err := getReader(s.storageDir, key)
 	if err != nil {
 		return nil, err
@@ -281,7 +280,7 @@ func (s *LocalStorage) getStorageData(key string) ([]byte, error) {
 
 }
 
-func (s *LocalStorage) deleteStorage(key string) error {
+func (s *FileSystemStorage) deleteStorage(key string) error {
 	if err := os.Mkdir(s.storageDir, 0700); err != nil && !os.IsExist(err) {
 		return err
 	}
@@ -299,7 +298,7 @@ func (s *LocalStorage) deleteStorage(key string) error {
 	return nil
 }
 
-func (s *LocalStorage) dumpToStorage(key string, data []byte) error {
+func (s *FileSystemStorage) dumpToStorage(key string, data []byte) error {
 	key = md5Hash(key)
 
 	f, err := getWriter(s.storageDir, key)

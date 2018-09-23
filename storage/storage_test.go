@@ -29,20 +29,20 @@ func boostrap(t *testing.T) string {
 	return tmpDir
 }
 
-func TestNewLocalStorage(t *testing.T) {
+func TestNewFileSystemStorage(t *testing.T) {
 	tmpDir := boostrap(t)
 
-	_, err := NewLocalStorage(tmpDir)
+	_, err := NewFileSystemStorage(tmpDir)
 
 	if err != nil {
 		t.Fatalf("err not expected: %s", err)
 	}
 }
 
-func TestLocalStorage_IsNotExist(t *testing.T) {
+func TestFileSystemStorage_IsNotExist(t *testing.T) {
 	tmpDir := boostrap(t)
 
-	storage, err := NewLocalStorage(tmpDir)
+	storage, err := NewFileSystemStorage(tmpDir)
 
 	if err != nil {
 		t.Fatalf("err not expected: %s", err)
@@ -64,25 +64,25 @@ func TestLocalStorage_IsNotExist(t *testing.T) {
 	}
 }
 
-func TestLocalStorage_Type(t *testing.T) {
+func TestFileSystemStorage_Type(t *testing.T) {
 	tmpDir := boostrap(t)
 
-	storage, err := NewLocalStorage(tmpDir)
+	storage, err := NewFileSystemStorage(tmpDir)
 
 	if err != nil {
 		t.Fatalf("err not expected: %s", err)
 	}
 
 	chk := storage.Type()
-	if chk != "local" {
-		t.Fatalf("expected: %s, found : %s", "local", chk)
+	if chk != "fs" {
+		t.Fatalf("expected: %s, found : %s", "fs", chk)
 	}
 }
 
-func TestLocalStorage_PutWithExpiration(t *testing.T) {
+func TestFileSystemStorage_PutWithExpiration(t *testing.T) {
 	tmpDir := boostrap(t)
 
-	storage, err := NewLocalStorage(tmpDir)
+	storage, err := NewFileSystemStorage(tmpDir)
 
 	if err != nil {
 		t.Fatalf("err not expected: %s", err)
@@ -110,10 +110,10 @@ func TestLocalStorage_PutWithExpiration(t *testing.T) {
 	}
 }
 
-func TestLocalStorage_DeleteEmpty(t *testing.T) {
+func TestFileSystemStorage_DeleteEmpty(t *testing.T) {
 	tmpDir := boostrap(t)
 
-	storage, err := NewLocalStorage(tmpDir)
+	storage, err := NewFileSystemStorage(tmpDir)
 
 	if err != nil {
 		t.Fatalf("err not expected: %s", err)
@@ -125,10 +125,10 @@ func TestLocalStorage_DeleteEmpty(t *testing.T) {
 	}
 }
 
-func TestLocalStorage_Delete(t *testing.T) {
+func TestFileSystemStorage_Delete(t *testing.T) {
 	tmpDir := boostrap(t)
 
-	storage, err := NewLocalStorage(tmpDir)
+	storage, err := NewFileSystemStorage(tmpDir)
 
 	if err != nil {
 		t.Fatalf("err not expected: %s", err)
@@ -178,10 +178,10 @@ func TestLocalStorage_Delete(t *testing.T) {
 	}
 }
 
-func TestLocalStorage_DeleteAll(t *testing.T) {
+func TestFileSystemStorage_DeleteAll(t *testing.T) {
 	tmpDir := boostrap(t)
 
-	storage, err := NewLocalStorage(tmpDir)
+	storage, err := NewFileSystemStorage(tmpDir)
 
 	if err != nil {
 		t.Fatalf("err not expected: %s", err)
@@ -231,10 +231,10 @@ func TestLocalStorage_DeleteAll(t *testing.T) {
 	}
 }
 
-func TestLocalStorage_Get(t *testing.T) {
+func TestFileSystemStorage_Get(t *testing.T) {
 	tmpDir := boostrap(t)
 
-	storage, err := NewLocalStorage(tmpDir)
+	storage, err := NewFileSystemStorage(tmpDir)
 
 	if err != nil {
 		t.Fatalf("err not expected: %s", err)
@@ -260,10 +260,10 @@ func TestLocalStorage_Get(t *testing.T) {
 	}
 }
 
-func TestLocalStorage_GetPattern(t *testing.T) {
+func TestFileSystemStorage_GetPattern(t *testing.T) {
 	tmpDir := boostrap(t)
 
-	storage, err := NewLocalStorage(tmpDir)
+	storage, err := NewFileSystemStorage(tmpDir)
 
 	if err != nil {
 		t.Fatalf("err not expected: %s", err)
@@ -295,10 +295,10 @@ func TestLocalStorage_GetPattern(t *testing.T) {
 }
 
 
-func TestLocalStorage_GetEmpty(t *testing.T) {
+func TestFileSystemStorage_GetEmpty(t *testing.T) {
 	tmpDir := boostrap(t)
 
-	storage, err := NewLocalStorage(tmpDir)
+	storage, err := NewFileSystemStorage(tmpDir)
 
 	if err != nil {
 		t.Fatalf("err not expected: %s", err)
@@ -319,10 +319,10 @@ func TestLocalStorage_GetEmpty(t *testing.T) {
 	}
 }
 
-func TestLocalStorage_GetPatternEmpty(t *testing.T) {
+func TestFileSystemStorage_GetPatternEmpty(t *testing.T) {
 	tmpDir := boostrap(t)
 
-	storage, err := NewLocalStorage(tmpDir)
+	storage, err := NewFileSystemStorage(tmpDir)
 
 	if err != nil {
 		t.Fatalf("err not expected: %s", err)

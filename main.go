@@ -40,7 +40,7 @@ var globalFlags = []cli.Flag{
 	},
 	cli.StringFlag{
 		Name:  "provider",
-		Usage: "local",
+		Usage: "fs",
 		Value: "",
 	},
 }
@@ -80,10 +80,10 @@ func NewServer() *Cmd {
 
 
 		switch provider := c.String("provider"); provider {
-		case "local":
+		case "fs":
 			if v := c.String("basedir"); v == "" {
 				panic("basedir not set.")
-			} else if storage, err := storage.NewLocalStorage(v); err != nil {
+			} else if storage, err := storage.NewFileSystemStorage(v); err != nil {
 				panic(err)
 			} else {
 				options = append(options, http.UseStorage(storage))
