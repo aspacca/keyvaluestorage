@@ -19,4 +19,5 @@ COPY --from=build /usr/bin/server /root/
 EXPOSE 8080
 WORKDIR /root/
 
-CMD ["./server", "--basedir", "./", "--provider", "fs"]
+RUN ["mkdir", "/root/cache"]
+ENTRYPOINT ["./server", "--basedir", "./cache"]

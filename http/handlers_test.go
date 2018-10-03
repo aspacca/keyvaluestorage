@@ -1,15 +1,15 @@
 package http
 
 import (
-	"net/http"
-	"net/http/httptest"
-	"testing"
-	"os"
-	"time"
 	"bytes"
 	"github.com/aspacca/keyvaluestorage/storage"
 	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"os"
 	"path/filepath"
+	"testing"
+	"time"
 )
 
 func boostrap(t *testing.T) *Server {
@@ -305,7 +305,6 @@ func TestServer_GetWithFilter(t *testing.T) {
 	assertStatus(rr, http.StatusOK, t)
 	assertBody(rr, `[{"another key":"another value"}]`, t)
 }
-
 
 func TestServer_GetNotFound(t *testing.T) {
 	s := boostrap(t)

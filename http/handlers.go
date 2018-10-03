@@ -1,14 +1,14 @@
 package http
 
 import (
-	"net/http"
-	"fmt"
-	"time"
-	"strconv"
-	"io"
 	"bytes"
+	"fmt"
 	"github.com/gorilla/mux"
+	"io"
 	"io/ioutil"
+	"net/http"
+	"strconv"
+	"time"
 )
 
 func healthHandler(w http.ResponseWriter, req *http.Request) {
@@ -35,7 +35,7 @@ func (s *Server) putHandler(w http.ResponseWriter, req *http.Request) {
 	expireIn := req.FormValue("expire_in")
 
 	if len(expireIn) > 0 {
-		expirationDuration, err  := strconv.Atoi(expireIn)
+		expirationDuration, err := strconv.Atoi(expireIn)
 
 		if err != nil {
 			s.logger.WithField("Component", "HTTP").Debugf("Error in expiration (%s): %s", expireIn, err)

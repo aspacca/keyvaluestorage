@@ -9,8 +9,8 @@ import (
 	"github.com/PuerkitoBio/ghost/handlers"
 	"github.com/gorilla/mux"
 
-	"github.com/sirupsen/logrus"
 	"github.com/aspacca/keyvaluestorage/storage"
+	"github.com/sirupsen/logrus"
 )
 
 // parse request with maximum memory of _24Kilobits
@@ -33,11 +33,11 @@ func UseStorage(s storage.Storage) OptionFn {
 }
 
 type Server struct {
-	logger *logrus.Logger
-	router *mux.Router
+	logger  *logrus.Logger
+	router  *mux.Router
 	storage storage.Storage
 
-	ListenerString        string
+	ListenerString string
 }
 
 func New(options ...OptionFn) (*Server, error) {
@@ -45,7 +45,7 @@ func New(options ...OptionFn) (*Server, error) {
 	logger.Out = os.Stdout
 
 	s := &Server{
-		logger:logger,
+		logger: logger,
 	}
 
 	for _, optionFn := range options {
@@ -57,7 +57,6 @@ func New(options ...OptionFn) (*Server, error) {
 
 func (s *Server) setupRouter() {
 	s.router = mux.NewRouter()
-
 
 	s.router.HandleFunc("/health", healthHandler).Methods("GET")
 
@@ -78,7 +77,6 @@ func (s *Server) Run() {
 
 	s.setupRouter()
 
-
 	go func() {
 		listener := &http.Server{
 			Addr:    s.ListenerString,
@@ -93,6 +91,8 @@ func (s *Server) Run() {
 	signal.Notify(term, syscall.SIGTERM)
 
 	<-term
+
+	s.storage.Flush()
 
 	s.logger.Info("server stopped.")
 }

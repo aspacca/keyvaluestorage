@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/minio/cli"
 	"fmt"
-	"github.com/aspacca/keyvaluestorage/storage"
 	"github.com/aspacca/keyvaluestorage/http"
+	"github.com/aspacca/keyvaluestorage/storage"
+	"github.com/minio/cli"
 )
 
 var Version = "0.1"
@@ -40,7 +40,7 @@ var globalFlags = []cli.Flag{
 	},
 	cli.StringFlag{
 		Name:  "provider",
-		Usage: "fs",
+		Usage: "fs|memory",
 		Value: "",
 	},
 }
@@ -78,12 +78,19 @@ func NewServer() *Cmd {
 			options = append(options, http.Listener(v))
 		}
 
-
 		switch provider := c.String("provider"); provider {
 		case "fs":
 			if v := c.String("basedir"); v == "" {
 				panic("basedir not set.")
 			} else if storage, err := storage.NewFileSystemStorage(v); err != nil {
+				panic(err)
+			} else {
+				options = append(options, http.UseStorage(storage))
+			}
+		case "memory":
+			if v := c.String("basedir"); v == "" {
+				panic("basedir not set.")
+			} else if storage, err := storage.NewMemoryStorage(v); err != nil {
 				panic(err)
 			} else {
 				options = append(options, http.UseStorage(storage))
