@@ -15,11 +15,11 @@ $ docker-compose up
 
 
 ## Usage
-Parameter | Description | Value | Env
---- | --- | --- | ---
-listener | port to use for http (0.0.0.0:80) | |
-provider | which storage provider to use | (fs|memory) |
-basedir | path storage for filesystem provider| |
+Parameter | Description | Value
+--- | --- | ---
+listener | port to use for http (0.0.0.0:80) |
+provider | which storage provider to use | (fs\|memory)
+basedir | path storage for filesystem provider|
 
 ## Build
 
