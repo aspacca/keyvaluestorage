@@ -77,7 +77,7 @@ func (s *Server) setupRouter() {
 	s.router.NotFoundHandler = http.HandlerFunc(s.notFoundHandler)
 }
 
-// Server.Run Start the server
+// Run Start the server
 func (s *Server) Run() {
 	s.logger.Infof("starting Key Value Storage HTTP Backend using storage provider: %s", s.storage.Type())
 

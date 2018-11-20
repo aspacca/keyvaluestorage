@@ -1,4 +1,4 @@
-# KeyValue Storage backend
+# KeyValue Storage backend [![Go Report Card](https://goreportcard.com/badge/github.com/aspacca/keyvaluestorage)](https://goreportcard.com/report/github.com/aspacca/keyvaluestorage)
 
 The solution is made of two package.
 The main storage package, that implements the storage key value engine.

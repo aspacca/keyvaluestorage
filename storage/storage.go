@@ -59,9 +59,9 @@ func getReader(storageDir string, fileName string) (*os.File, error) {
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, errNotExists
-		} else {
-			return nil, fmt.Errorf("cannot access storagePath (%s): %s", storagePath, err)
 		}
+
+		return nil, fmt.Errorf("cannot access storagePath (%s): %s", storagePath, err)
 	}
 
 	return f, nil
