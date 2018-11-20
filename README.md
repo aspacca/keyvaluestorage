@@ -1,4 +1,8 @@
-# KeyValue Storage backend [![Go Report Card](https://goreportcard.com/badge/github.com/aspacca/keyvaluestorage)](https://goreportcard.com/report/github.com/aspacca/keyvaluestorage)
+# KeyValue Storage backend
+ [![Build Status](https://travis-ci.org/aspacca/keyvaluestorage.svg?branch=master)](https://travis-ci.org/aspacca/keyvaluestorage)
+ [![codecov](https://codecov.io/gh/aspacca/keyvaluestorage/branch/master/graph/badge.svg)](https://codecov.io/gh/aspacca/keyvaluestorage)
+ [![Go language](https://img.shields.io/badge/language-Go-blue.svg)](https://golang.org/)
+ [![Go Report Card](https://goreportcard.com/badge/github.com/aspacca/keyvaluestorage)](https://goreportcard.com/report/github.com/aspacca/keyvaluestorage)
 
 The solution is made of two package.
 The main storage package, that implements the storage key value engine.
