@@ -9,9 +9,9 @@ import (
 	"time"
 )
 
-const NoExpiration time.Duration = -1
+const noExpiration time.Duration = -1
 
-var NotExistsError = fmt.Errorf("entry does not exists")
+var errNotExists = fmt.Errorf("entry does not exists")
 
 type entry struct {
 	Key        string `json:"key"`
@@ -19,6 +19,7 @@ type entry struct {
 	Expiration int64  `json:"expiration"`
 }
 
+// Storage Interface for storage operations
 type Storage interface {
 	Put(key string, value string, expiration time.Duration) error
 	Get(key string) (io.Reader, error)
@@ -57,7 +58,7 @@ func getReader(storageDir string, fileName string) (*os.File, error) {
 	f, err := os.OpenFile(storagePath, os.O_RDONLY, 0600)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, NotExistsError
+			return nil, errNotExists
 		} else {
 			return nil, fmt.Errorf("cannot access storagePath (%s): %s", storagePath, err)
 		}

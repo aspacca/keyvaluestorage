@@ -39,7 +39,7 @@ func TestMemoryStorage_IsNotExist(t *testing.T) {
 		t.Fatalf("err not expected: %s", err)
 	}
 
-	b := storage.IsNotExist(NotExistsError)
+	b := storage.IsNotExist(errNotExists)
 	if !b {
 		t.Fatalf("expected: %t, found : %t", true, b)
 	}
@@ -87,7 +87,7 @@ func TestMemoryStorage_PutWithExpiration(t *testing.T) {
 	time.Sleep(time.Duration(2 * time.Second))
 
 	r, err := storage.Get("a key")
-	if err != NotExistsError {
+	if err != errNotExists {
 		t.Fatalf("err not expected: %s", err)
 	}
 
@@ -111,7 +111,7 @@ func TestMemoryStorage_DeleteEmpty(t *testing.T) {
 	}
 
 	err = storage.Delete("a key")
-	if err != NotExistsError {
+	if err != errNotExists {
 		t.Fatalf("err not expected: %s", err)
 	}
 }
@@ -141,7 +141,7 @@ func TestMemoryStorage_Delete(t *testing.T) {
 	}
 
 	r, err := storage.Get("a key")
-	if err != NotExistsError {
+	if err != errNotExists {
 		t.Fatalf("err not expected: %s", err)
 	}
 
@@ -194,7 +194,7 @@ func TestMemoryStorage_DeleteAll(t *testing.T) {
 	}
 
 	r, err := storage.Get("a key")
-	if err != NotExistsError {
+	if err != errNotExists {
 		t.Fatalf("err not expected: %s", err)
 	}
 
@@ -208,7 +208,7 @@ func TestMemoryStorage_DeleteAll(t *testing.T) {
 	}
 
 	r, err = storage.Get("another key")
-	if err != NotExistsError {
+	if err != errNotExists {
 		t.Fatalf("err not expected: %s", err)
 	}
 
@@ -295,7 +295,7 @@ func TestMemoryStorage_GetEmpty(t *testing.T) {
 	}
 
 	r, err := storage.Get("a key")
-	if err != NotExistsError {
+	if err != errNotExists {
 		t.Fatalf("err not expected: %s", err)
 	}
 

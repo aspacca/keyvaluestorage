@@ -18,7 +18,7 @@ const memoryCacheFile = "memory.db"
 
 var logger *logrus.Logger
 
-type MemoryStorage struct {
+type memoryStorage struct {
 	storageDir   string
 	storageCache *os.File
 	locks        map[string]*sync.Mutex
@@ -27,9 +27,9 @@ type MemoryStorage struct {
 	quit         chan bool
 }
 
-// Factory for memory storage
+// NewMemoryStorage Factory for memory storage
 // saves db to `storageDir/memory.db`
-func NewMemoryStorage(storageDir string) (*MemoryStorage, error) {
+func NewMemoryStorage(storageDir string) (*memoryStorage, error) {
 	logger = logrus.New()
 	logger.Out = os.Stdout
 
@@ -53,7 +53,7 @@ func NewMemoryStorage(storageDir string) (*MemoryStorage, error) {
 		return nil, err
 	}
 
-	storage := &MemoryStorage{
+	storage := &memoryStorage{
 		storageDir:   storageDir,
 		storageCache: storageCache,
 		data:         data,
@@ -80,31 +80,33 @@ func NewMemoryStorage(storageDir string) (*MemoryStorage, error) {
 	return storage, nil
 }
 
-func (s *MemoryStorage) Type() string {
+// memoryStorage.Type Returns type of the storage
+func (s *memoryStorage) Type() string {
 	return "memory"
 }
 
-func (s *MemoryStorage) IsNotExist(err error) bool {
+// memoryStorage.IsNotExist Returns if err is for not existing file
+func (s *memoryStorage) IsNotExist(err error) bool {
 	if err == nil {
 		return false
 	}
 
-	return err == NotExistsError
+	return err == errNotExists
 }
 
-func (s *MemoryStorage) lockAll() {
+func (s *memoryStorage) lockAll() {
 	for key := range s.locks {
 		s.locks[key].Lock()
 	}
 }
 
-func (s *MemoryStorage) unlockAll() {
+func (s *memoryStorage) unlockAll() {
 	for key := range s.locks {
 		s.locks[key].Unlock()
 	}
 }
 
-func (s *MemoryStorage) lock(key string) {
+func (s *memoryStorage) lock(key string) {
 	if _, ok := s.locks[key]; !ok {
 		s.locks[key] = &sync.Mutex{}
 	}
@@ -112,29 +114,29 @@ func (s *MemoryStorage) lock(key string) {
 	s.locks[key].Lock()
 }
 
-func (s *MemoryStorage) unlock(key string) {
+func (s *memoryStorage) unlock(key string) {
 	s.locks[key].Unlock()
 }
 
-func (s *MemoryStorage) Get(key string) (io.Reader, error) {
+// memoryStorage.Get Returns io.Reader for a key or error if it fails
+func (s *memoryStorage) Get(key string) (io.Reader, error) {
 	r := bytes.NewReader(nil)
 
 	s.lock(key)
 	defer s.unlock(key)
 
 	if entry, ok := s.data[key]; !ok {
-		return r, NotExistsError
+		return r, errNotExists
 
 	} else if !isExpired(entry.Expiration) {
 		return bytes.NewReader(entry.Value), nil
 	}
 
-	return r, NotExistsError
+	return r, errNotExists
 }
 
-func (s *MemoryStorage) GetPattern(pattern string) (io.Reader, error) {
-	r := bytes.NewReader(nil)
-
+// memoryStorage.Get Returns io.Reader for a pattern or error if it fails
+func (s *memoryStorage) GetPattern(pattern string) (io.Reader, error) {
 	s.lockAll()
 	defer s.unlockAll()
 
@@ -149,17 +151,18 @@ func (s *MemoryStorage) GetPattern(pattern string) (io.Reader, error) {
 		}
 	}
 
-	r = bytes.NewReader([]byte(fmt.Sprintf("[%s]", strings.Join(ret, ","))))
+	r := bytes.NewReader([]byte(fmt.Sprintf("[%s]", strings.Join(ret, ","))))
 
 	return r, nil
 }
 
-func (s *MemoryStorage) Delete(key string) error {
+// memoryStorage.Delete Deletes an entry by key, returns error if it fails
+func (s *memoryStorage) Delete(key string) error {
 	s.lock(key)
 	defer s.unlock(key)
 
 	if _, ok := s.data[key]; !ok {
-		return NotExistsError
+		return errNotExists
 
 	}
 
@@ -168,23 +171,25 @@ func (s *MemoryStorage) Delete(key string) error {
 	return nil
 }
 
-func (s *MemoryStorage) DeleteAll() error {
+// memoryStorage.DeleteAll Deletes all entries, returns error if it fails
+func (s *memoryStorage) DeleteAll() error {
 	s.lockAll()
 	defer s.unlockAll()
 
-	for key, _ := range s.data {
+	for key := range s.data {
 		delete(s.data, key)
 	}
 
 	return nil
 }
 
-func (s *MemoryStorage) Put(key string, value string, expiration time.Duration) error {
+// memoryStorage.Put Saves an entry by key with timeout, returns error if it fails
+func (s *memoryStorage) Put(key string, value string, expiration time.Duration) error {
 	s.lock(key)
 	defer s.unlock(key)
 
 	var newExpiration int64
-	if expiration != NoExpiration {
+	if expiration != noExpiration {
 		newExpiration = time.Now().Add(expiration).UnixNano()
 	}
 
@@ -199,7 +204,8 @@ func (s *MemoryStorage) Put(key string, value string, expiration time.Duration) 
 	return nil
 }
 
-func (s *MemoryStorage) Flush() {
+// memoryStorage.Flush Flushes storage
+func (s *memoryStorage) Flush() {
 	err := s.dumpToFilesystem()
 	if err != nil {
 		logger.Debugf("error in memory storage cache: %s", err)
@@ -208,7 +214,7 @@ func (s *MemoryStorage) Flush() {
 	s.quit <- true
 }
 
-func (s *MemoryStorage) dumpToFilesystem() error {
+func (s *memoryStorage) dumpToFilesystem() error {
 	s.lockAll()
 	defer s.unlockAll()
 

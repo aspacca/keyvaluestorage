@@ -118,10 +118,9 @@ func (s *Server) getHandler(w http.ResponseWriter, req *http.Request) {
 	if s.storage.IsNotExist(err) {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
-	} else {
-		value, err = ioutil.ReadAll(r)
 	}
 
+	value, err = ioutil.ReadAll(r)
 	if err != nil {
 		s.logger.WithField("Component", "HTTP").Errorf("Error getting key (%s): %s", key, err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

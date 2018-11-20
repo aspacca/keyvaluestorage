@@ -7,7 +7,7 @@ import (
 	"github.com/minio/cli"
 )
 
-var Version = "0.1"
+var version = "0.1"
 var helpTemplate = `NAME:
 {{.Name}} - {{.Usage}}
 
@@ -24,7 +24,7 @@ FLAGS:
 {{range .Flags}}{{.}}
 {{end}}{{end}}
 VERSION:
-` + Version +
+` + version +
 	`{{ "\n"}}`
 
 var globalFlags = []cli.Flag{
@@ -45,18 +45,18 @@ var globalFlags = []cli.Flag{
 	},
 }
 
-type Cmd struct {
+type cmd struct {
 	*cli.App
 }
 
-func VersionAction(c *cli.Context) {
+func versionAction(c *cli.Context) {
 	fmt.Println("Key value storage server ver")
 }
 
-func NewServer() *Cmd {
+func newServer() *cmd {
 	app := cli.NewApp()
 	app.Name = "Key value storage server"
-	app.Version = Version
+	app.Version = version
 	app.Author = "Andrea Spacca"
 	app.Description = "Key value storage server"
 	app.Flags = globalFlags
@@ -64,7 +64,7 @@ func NewServer() *Cmd {
 	app.Commands = []cli.Command{
 		{
 			Name:   "version",
-			Action: VersionAction,
+			Action: versionAction,
 		},
 	}
 
@@ -105,18 +105,17 @@ func NewServer() *Cmd {
 
 		if err != nil {
 			panic(fmt.Sprintf("Error starting server: %s\n", err))
-			return
 		}
 
 		s.Run()
 	}
 
-	return &Cmd{
+	return &cmd{
 		App: app,
 	}
 }
 
 func main() {
-	app := NewServer()
+	app := newServer()
 	app.RunAndExitOnError()
 }

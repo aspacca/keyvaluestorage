@@ -16,8 +16,10 @@ import (
 // parse request with maximum memory of _24Kilobits
 const _24K = (1 << 10) * 24
 
+// OptionFn Functional option type
 type OptionFn func(*Server)
 
+// Listener Set bind address
 func Listener(s string) OptionFn {
 	return func(srvr *Server) {
 		srvr.ListenerString = s
@@ -25,6 +27,7 @@ func Listener(s string) OptionFn {
 
 }
 
+// UseStorage Set storage type
 func UseStorage(s storage.Storage) OptionFn {
 	return func(srvr *Server) {
 		srvr.storage = s
@@ -32,6 +35,7 @@ func UseStorage(s storage.Storage) OptionFn {
 
 }
 
+// Server HTTP Server struct
 type Server struct {
 	logger  *logrus.Logger
 	router  *mux.Router
@@ -40,6 +44,7 @@ type Server struct {
 	ListenerString string
 }
 
+// New HTTP Server factory
 func New(options ...OptionFn) (*Server, error) {
 	logger := logrus.New()
 	logger.Out = os.Stdout
@@ -72,6 +77,7 @@ func (s *Server) setupRouter() {
 	s.router.NotFoundHandler = http.HandlerFunc(s.notFoundHandler)
 }
 
+// Server.Run Start the server
 func (s *Server) Run() {
 	s.logger.Infof("starting Key Value Storage HTTP Backend using storage provider: %s", s.storage.Type())
 

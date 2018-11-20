@@ -13,45 +13,47 @@ import (
 	"time"
 )
 
-type FileSystemStorage struct {
+type fileSystemStorage struct {
 	storageDir string
 	locks      map[string]*sync.Mutex
 }
 
-// Factory for fs storage
+// NewFileSystemStorage Factory for fs storage
 // saves db to `storageDir/*`
-func NewFileSystemStorage(storageDir string) (*FileSystemStorage, error) {
-	return &FileSystemStorage{
+func NewFileSystemStorage(storageDir string) (*fileSystemStorage, error) {
+	return &fileSystemStorage{
 		storageDir: storageDir,
 		locks:      map[string]*sync.Mutex{},
 	}, nil
 }
 
-func (s *FileSystemStorage) Type() string {
+// fileSystemStorage.Type Returns type of the storage
+func (s *fileSystemStorage) Type() string {
 	return "fs"
 }
 
-func (s *FileSystemStorage) IsNotExist(err error) bool {
+// fileSystemStorage.IsNotExist Returns if err is for not existing file
+func (s *fileSystemStorage) IsNotExist(err error) bool {
 	if err == nil {
 		return false
 	}
 
-	return err == NotExistsError
+	return err == errNotExists
 }
 
-func (s *FileSystemStorage) lockAll() {
+func (s *fileSystemStorage) lockAll() {
 	for key := range s.locks {
 		s.locks[key].Lock()
 	}
 }
 
-func (s *FileSystemStorage) unlockAll() {
+func (s *fileSystemStorage) unlockAll() {
 	for key := range s.locks {
 		s.locks[key].Unlock()
 	}
 }
 
-func (s *FileSystemStorage) lock(key string) {
+func (s *fileSystemStorage) lock(key string) {
 	if _, ok := s.locks[key]; !ok {
 		s.locks[key] = &sync.Mutex{}
 	}
@@ -59,11 +61,12 @@ func (s *FileSystemStorage) lock(key string) {
 	s.locks[key].Lock()
 }
 
-func (s *FileSystemStorage) unlock(key string) {
+func (s *fileSystemStorage) unlock(key string) {
 	s.locks[key].Unlock()
 }
 
-func (s *FileSystemStorage) Get(key string) (io.Reader, error) {
+// fileSystemStorage.Get Returns io.Reader for a key or error if it fails
+func (s *fileSystemStorage) Get(key string) (io.Reader, error) {
 	r := bytes.NewReader(nil)
 
 	s.lock(key)
@@ -77,7 +80,7 @@ func (s *FileSystemStorage) Get(key string) (io.Reader, error) {
 	}
 
 	if len(b) == 0 {
-		return r, NotExistsError
+		return r, errNotExists
 	}
 
 	var entry entry
@@ -90,10 +93,11 @@ func (s *FileSystemStorage) Get(key string) (io.Reader, error) {
 		return bytes.NewReader(entry.Value), nil
 	}
 
-	return r, NotExistsError
+	return r, errNotExists
 }
 
-func (s *FileSystemStorage) GetPattern(pattern string) (io.Reader, error) {
+// fileSystemStorage.Get Returns io.Reader for a pattern or error if it fails
+func (s *fileSystemStorage) GetPattern(pattern string) (io.Reader, error) {
 	r := bytes.NewReader(nil)
 
 	s.lockAll()
@@ -135,7 +139,8 @@ func (s *FileSystemStorage) GetPattern(pattern string) (io.Reader, error) {
 	return r, nil
 }
 
-func (s *FileSystemStorage) Delete(key string) error {
+// fileSystemStorage.Delete Deletes an entry by key, returns error if it fails
+func (s *fileSystemStorage) Delete(key string) error {
 	s.lock(key)
 	defer s.unlock(key)
 
@@ -144,7 +149,8 @@ func (s *FileSystemStorage) Delete(key string) error {
 	return s.deleteStorage(key)
 }
 
-func (s *FileSystemStorage) DeleteAll() error {
+// fileSystemStorage.DeleteAll Deletes all entries, returns error if it fails
+func (s *fileSystemStorage) DeleteAll() error {
 	s.lockAll()
 	defer s.unlockAll()
 
@@ -160,12 +166,13 @@ func (s *FileSystemStorage) DeleteAll() error {
 	return nil
 }
 
-func (s *FileSystemStorage) Put(key string, value string, expiration time.Duration) error {
+// fileSystemStorage.Put Saves an entry by key with timeout, returns error if it fails
+func (s *fileSystemStorage) Put(key string, value string, expiration time.Duration) error {
 	s.lock(key)
 	defer s.unlock(key)
 
 	var newExpiration int64
-	if expiration != NoExpiration {
+	if expiration != noExpiration {
 		newExpiration = time.Now().Add(expiration).UnixNano()
 	}
 
@@ -183,11 +190,12 @@ func (s *FileSystemStorage) Put(key string, value string, expiration time.Durati
 	return s.dumpToStorage(key, dumped)
 }
 
-func (s *FileSystemStorage) Flush() {
+// fileSystemStorage.Flush Flushes storage
+func (s *fileSystemStorage) Flush() {
 
 }
 
-func (s *FileSystemStorage) getAllStorageKeys() ([]string, error) {
+func (s *fileSystemStorage) getAllStorageKeys() ([]string, error) {
 	if err := os.Mkdir(s.storageDir, 0700); err != nil && !os.IsExist(err) {
 		return []string{}, err
 	}
@@ -207,7 +215,7 @@ func (s *FileSystemStorage) getAllStorageKeys() ([]string, error) {
 	return r, nil
 }
 
-func (s *FileSystemStorage) getStorageData(key string) ([]byte, error) {
+func (s *fileSystemStorage) getStorageData(key string) ([]byte, error) {
 	f, err := getReader(s.storageDir, key)
 	if err != nil {
 		return nil, err
@@ -227,7 +235,7 @@ func (s *FileSystemStorage) getStorageData(key string) ([]byte, error) {
 
 }
 
-func (s *FileSystemStorage) deleteStorage(key string) error {
+func (s *fileSystemStorage) deleteStorage(key string) error {
 	if err := os.Mkdir(s.storageDir, 0700); err != nil && !os.IsExist(err) {
 		return err
 	}
@@ -237,15 +245,15 @@ func (s *FileSystemStorage) deleteStorage(key string) error {
 	if err := os.Remove(storagePath); err != nil {
 		if !os.IsNotExist(err) {
 			return err
-		} else {
-			return NotExistsError
 		}
+
+		return errNotExists
 	}
 
 	return nil
 }
 
-func (s *FileSystemStorage) dumpToStorage(key string, data []byte) error {
+func (s *fileSystemStorage) dumpToStorage(key string, data []byte) error {
 	key = md5Hash(key)
 
 	f, err := getWriter(s.storageDir, key)
